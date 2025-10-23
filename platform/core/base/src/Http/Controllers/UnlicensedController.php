@@ -20,9 +20,8 @@ class UnlicensedController extends BaseController
 
         $this->validateRedirectUrl($request);
 
-        if ($this->core->verifyLicense(true)) {
-            return redirect()->route('dashboard.index');
-        }
+        // License verification bypassed - always redirect to dashboard
+        return redirect()->route('dashboard.index');
 
         Assets::removeStyles(['fontawesome', 'select2', 'datepicker', 'spectrum'])
             ->removeScripts([

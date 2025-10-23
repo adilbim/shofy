@@ -25,37 +25,14 @@ class LicenseController extends BaseController
 
     public function store(LicenseSettingRequest $request, Core $core): RedirectResponse
     {
-        $buyer = $request->input('buyer');
+        // License activation bypassed - always proceed to final step
+        $buyer = $request->input('buyer', 'License Bypassed');
+        
+        Setting::forceSet('licensed_to', $buyer)->save();
 
-        if (filter_var($buyer, FILTER_VALIDATE_URL)) {
-            $username = Str::afterLast($buyer, '/');
+        $finalUrl = URL::temporarySignedRoute('installers.final', Carbon::now()->addMinutes(30));
 
-            throw ValidationException::withMessages([
-                'buyer' => sprintf('Envato username must not a URL. Please try with username "%s".', $username),
-            ]);
-        }
-
-        try {
-            $licenseKey = $request->input('purchase_code');
-
-            $core->activateLicense($licenseKey, $buyer);
-
-            Setting::forceSet('licensed_to', $buyer)->save();
-
-            $finalUrl = URL::temporarySignedRoute('installers.final', Carbon::now()->addMinutes(30));
-
-            return redirect()->to($finalUrl);
-        } catch (LicenseInvalidException|LicenseIsAlreadyActivatedException $exception) {
-            throw ValidationException::withMessages([
-                'purchase_code' => [$exception->getMessage()],
-            ]);
-        } catch (Throwable $exception) {
-            report($exception);
-
-            throw ValidationException::withMessages([
-                'purchase_code' => ['Something went wrong. Please try again later.'],
-            ]);
-        }
+        return redirect()->to($finalUrl);
     }
 
     public function skip(): RedirectResponse

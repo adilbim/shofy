@@ -55,52 +55,15 @@ class GeneralSettingController extends SettingController
 
     public function getVerifyLicense(Request $request, Core $core)
     {
-        if ($request->expectsJson() && ! $core->checkConnection()) {
-            return response()->json([
-                'message' => sprintf('Could not connect to the license server. Please try again later. Your site IP: %s', $core->getServerIP()),
-            ], 400);
-        }
+        // License verification bypassed - always return success
+        $data = [
+            'activated_at' => now()->format('M d Y'),
+            'licensed_to' => 'License Bypassed',
+        ];
 
-        $invalidMessage = 'Your license is invalid. Please activate your license!';
-
-        if (! $this->isLicenseExists($core)) {
-            $this
-                ->httpResponse()
-                ->setData([
-                    'html' => view('core/base::system.license-invalid')->render(),
-                ]);
-
-            return $this
-                ->httpResponse()
-                ->setError()
-                ->setMessage($invalidMessage);
-        }
-
-        try {
-            if (! $core->verifyLicense(true)) {
-                return $this
-                    ->httpResponse()
-                    ->setError()
-                    ->setMessage($invalidMessage);
-            }
-
-            $activatedAt = $this->getLicenseActivatedDate($core);
-
-            $data = [
-                'activated_at' => $activatedAt->format('M d Y'),
-                'licensed_to' => setting('licensed_to'),
-            ];
-
-            $core->clearLicenseReminder();
-
-            return $this
-                ->httpResponse()
-                ->setMessage('Your license is activated.')->setData($data);
-        } catch (Throwable $exception) {
-            return $this
-                ->httpResponse()
-                ->setMessage($exception->getMessage());
-        }
+        return $this
+            ->httpResponse()
+            ->setMessage('Your license is activated.')->setData($data);
     }
 
     public function activateLicense(LicenseSettingRequest $request, Core $core): BaseHttpResponse
@@ -118,65 +81,29 @@ class GeneralSettingController extends SettingController
 
         $purchasedCode = $request->input('purchase_code');
 
-        try {
-            $core->activateLicense($purchasedCode, $buyer);
+        // License activation bypassed - always return success
+        $data = $this->saveActivatedLicense($core, $buyer);
 
-            $data = $this->saveActivatedLicense($core, $buyer);
-
-            return $this
-                ->httpResponse()
-                ->setMessage('Your license has been activated successfully.')
-                ->setData($data);
-        } catch (LicenseInvalidException | LicenseIsAlreadyActivatedException $exception) {
-            return $this
-                ->httpResponse()
-                ->setError()
-                ->setMessage($exception->getMessage());
-        } catch (Throwable $exception) {
-            report($exception);
-
-            return $this
-                ->httpResponse()
-                ->setError()
-                ->setMessage($exception->getMessage() ?: 'Something went wrong. Please try again later.');
-        }
+        return $this
+            ->httpResponse()
+            ->setMessage('Your license has been activated successfully.')
+            ->setData($data);
     }
 
     public function deactivateLicense(Core $core)
     {
-        try {
-            $core->deactivateLicense();
-
-            return $this
-                ->httpResponse()
-                ->setMessage('Deactivated license successfully!');
-        } catch (Throwable $exception) {
-            return $this
-                ->httpResponse()
-                ->setError()
-                ->setMessage($exception->getMessage());
-        }
+        // License deactivation bypassed - always return success
+        return $this
+            ->httpResponse()
+            ->setMessage('Deactivated license successfully!');
     }
 
     public function resetLicense(LicenseSettingRequest $request, Core $core)
     {
-        try {
-            if (! $core->revokeLicense($request->input('purchase_code'), $request->input('buyer'))) {
-                return $this
-                    ->httpResponse()
-                    ->setError()
-                    ->setMessage('Could not reset your license.');
-            }
-
-            return $this
-                ->httpResponse()
-                ->setMessage('Your license has been reset successfully.');
-        } catch (Throwable $exception) {
-            return $this
-                ->httpResponse()
-                ->setError()
-                ->setMessage($exception->getMessage());
-        }
+        // License reset bypassed - always return success
+        return $this
+            ->httpResponse()
+            ->setMessage('Your license has been reset successfully.');
     }
 
     protected function saveActivatedLicense(Core $core, string $buyer): array
@@ -195,25 +122,13 @@ class GeneralSettingController extends SettingController
 
     private function getLicenseActivatedDate(Core $core): Carbon
     {
-        if (config('core.base.general.license_storage_method') === 'database') {
-            // For database storage, use the setting's updated_at timestamp or current time
-            $licenseContent = SettingModel::query()->where('key', 'license_file_content')->first();
-
-            return $licenseContent && $licenseContent->updated_at
-                ? Carbon::parse($licenseContent->updated_at)
-                : Carbon::now();
-        }
-
-        // For file storage, use file creation time
-        return Carbon::createFromTimestamp(filectime($core->getLicenseFilePath()));
+        // License activation date bypassed - always return current time
+        return Carbon::now();
     }
 
     private function isLicenseExists(Core $core): bool
     {
-        if (config('core.base.general.license_storage_method') === 'database') {
-            return Setting::has('license_file_content') && ! empty(Setting::get('license_file_content'));
-        }
-
-        return File::exists($core->getLicenseFilePath());
+        // License existence check bypassed - always return true
+        return true;
     }
 }

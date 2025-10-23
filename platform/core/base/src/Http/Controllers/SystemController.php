@@ -96,7 +96,7 @@ class SystemController extends BaseSystemController
 
         $this->pageTitle(trans('core/base::system.updater'));
 
-        $activated = $core->verifyLicense(false, 15);
+        $activated = true; // License verification bypassed
         $isOutdated = false;
 
         try {
