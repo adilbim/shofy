@@ -1,0 +1,25 @@
+{
+    "name": "botble/hookpayment",
+    "description": "Flexible webhook-based payment gateway plugin for Botble CMS",
+    "type": "botble-plugin",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Botble Technologies",
+            "email": "contact@botble.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.1",
+        "botble/payment": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Botble\\HookPayment\\": "src/"
+        },
+        "files": [
+            "helpers/helpers.php"
+        ]
+    }
+}
+
