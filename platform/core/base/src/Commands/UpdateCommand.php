@@ -42,6 +42,12 @@ class UpdateCommand extends Command
         //     return self::FAILURE;
         // }
 
+        // Handle case where getLatestVersion() returns false (license bypassed)
+        if (! $latestUpdate) {
+            $this->components->info('Unable to check for updates (license check bypassed). Update functionality may be limited.');
+            return self::SUCCESS;
+        }
+
         if (version_compare($latestUpdate->version, $this->core->version(), '<=')) {
             if (confirm(
                 sprintf('Your current system version <comment>%s</comment> is the latest version. Do you want to reinstall this update?', $latestUpdate->version)

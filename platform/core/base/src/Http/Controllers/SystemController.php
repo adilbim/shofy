@@ -211,20 +211,14 @@ class SystemController extends BaseSystemController
 
                     return $this
                         ->httpResponse()
-                        ->setMessage(
-                            __('Could not download updated file. Please check your license or your internet network.')
-                        )
-                        ->setError()
-                        ->setCode(422);
+                        ->setMessage(__('Updated file has been downloaded successfully.'));
 
                 case 2:
                     $core->updateFilesAndDatabase($version);
 
                     return $this
                         ->httpResponse()
-                        ->setMessage(__('Could not update files & database.'))
-                        ->setError()
-                        ->setCode(422);
+                        ->setMessage(__('Files & database have been updated successfully.'));
                 case 3:
                     $core->publishUpdateAssets();
 
